@@ -94,16 +94,31 @@
     var fuera = new Set(($("excluir").value || "").split(",").map(function (x) { return sinTilde(x.trim().toLowerCase()); }).filter(Boolean));
     var lista = datos.p.filter(function (x) { return !fuera.has(sinTilde(String(x[0]))); }).slice(0, 90), n = datos.n;
     $("cuenta").textContent = n + (n === 1 ? " respuesta" : " respuestas") + (lista.length ? " · " + lista.length + " palabras" : "");
-    var cv = $("cv"), W = Math.max(320, $("nube").clientWidth), H = Math.round(W * 0.5);
+    var cv = $("cv"), W = Math.max(320, $("nube").clientWidth), H = Math.round(W * 0.56);
     var dpr = Math.min(window.devicePixelRatio || 1, 2.5);
     cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + "px";
     cv.getContext("2d").clearRect(0, 0, cv.width, cv.height);
     $("vacio").hidden = lista.length > 0; $("vacio").textContent = n ? "No quedan palabras para mostrar (revisa «Ocultar palabras»)." : "Todavía no hay respuestas.";
     $("top").innerHTML = lista.slice(0, 12).map(function (x) { return "<span><b>" + x[1] + "</b> · " + String(x[0]).replace(/[<>&]/g, "") + "</span>"; }).join("");
     if (!lista.length) return;
-    var max = lista[0][1], min = lista[lista.length - 1][1], base = W / 14;
+    dibujar(lista, W, dpr, 0, 1);
+  }
+
+  // Dibuja TODAS las palabras: si alguna no cabe (wordcloud2 la descarta), se repite con letras un poco más chicas hasta que quepan todas
+  var token = 0;
+  function dibujar(lista, W, dpr, intento, escala) {
+    var cv = $("cv"), mio = ++token, dibujadas = 0, max = lista[0][1], min = lista[lista.length - 1][1], base = W / 14 * escala;
+    cv.getContext("2d").clearRect(0, 0, cv.width, cv.height);
+    function suma() { dibujadas++; }
+    function fin() {
+      cv.removeEventListener("wordclouddrawn", suma); cv.removeEventListener("wordcloudstop", fin);
+      if (mio !== token) return;
+      if (dibujadas < lista.length && intento < 10) dibujar(lista, W, dpr, intento + 1, escala * 0.88);
+      else cv.setAttribute("data-dibujadas", dibujadas + "/" + lista.length);
+    }
+    cv.addEventListener("wordclouddrawn", suma); cv.addEventListener("wordcloudstop", fin);
     WordCloud(cv, {
-      list: lista, gridSize: Math.round(W / 50 * dpr), backgroundColor: "rgba(0,0,0,0)",
+      list: lista, gridSize: Math.max(4, Math.round(W / 75 * dpr * escala)), backgroundColor: "rgba(0,0,0,0)",
       fontFamily: "Montserrat, sans-serif", fontWeight: "700",
       weightFactor: function (v) { var t = max === min ? 1 : (v - min) / (max - min); return (base * 0.55 + base * 1.55 * Math.pow(t, 0.8)) * dpr; },
       color: function (w, v) { var t = max === min ? 1 : (v - min) / (max - min); return t > 0.66 ? PALETA[0] : t > 0.33 ? PALETA[1] : t > 0.12 ? PALETA[2] : PALETA[3]; },
@@ -121,7 +136,7 @@
     if (!API) { $("error").textContent = "El formulario aún no está conectado."; return; }
     fetch(API + "?accion=palabras").then(function (r) { return r.json(); }).then(function (j) {
       if (!j.ok) { $("error").textContent = "No pude leer las respuestas: " + (j.error || "error"); return; }
-      datos = { n: j.n, p: j.p }; pintarListo();
+      var nuevo = { n: j.n, p: j.p }; if (JSON.stringify(nuevo) !== JSON.stringify(datos)) { datos = nuevo; pintarListo(); }
     }).catch(function () { $("error").textContent = "No pude conectarme. Revisa tu conexión y toca Actualizar."; });
   }
 
@@ -135,6 +150,7 @@
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && document.body.classList.contains("captura")) { document.body.classList.remove("captura"); setTimeout(pintar, 60); } });
   var rz; window.addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(pintar, 150); });
   cargar();
+  if (!DEMO) setInterval(cargar, 20000);   // el panel se actualiza solo cada 20 s: lo que responden aparece en vivo
 })();
 </script>
 </body>

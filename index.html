@@ -21,6 +21,7 @@
   .estrella{ position:absolute; width:46px; pointer-events:none; opacity:.9; animation:flota 5s ease-in-out infinite; }
   .e1{ top:14px; left:6px; } .e2{ top:92px; right:4px; width:38px; animation-delay:1.2s; }
   @keyframes flota{ 0%,100%{ transform:translateY(0) rotate(0); } 50%{ transform:translateY(-8px) rotate(8deg); } }
+  .pregunta.primera{ margin-top:6px; }
   .pregunta{ font-family:'MuseoModerno','Montserrat',sans-serif; color:var(--morado-oscuro); font-size:21px; font-weight:800; line-height:1.25; margin:26px 0 4px; }
   .campo-ayuda{ font-size:12.5px; color:var(--morado-suave); margin:2px 0 0; }
   .check{ display:flex; gap:10px; align-items:flex-start; font-weight:500; font-size:12.5px; line-height:1.45; margin:18px 0 0; color:var(--texto); }
@@ -65,8 +66,22 @@
 
       <div class="oculto" aria-hidden="true"><label for="web">Deja este campo vacío</label><input type="text" id="web" name="web" tabindex="-1" autocomplete="off"></div>
 
-      <label class="check"><input type="checkbox" id="ok"> Autorizo a Feminario a tratar mis datos (nombre, correo, celular y respuesta) para mejorar la Femiapp y contactarme sobre ella.</label>
+      <label class="check"><input type="checkbox" id="ok"> Autorizo a Feminario a tratar mis datos (nombre, correo, celular y respuestas) para mejorar la Femiapp y contactarme sobre ella.</label>
       <div class="error" id="error" role="alert"></div>
+      <button class="btn" id="continuar" type="submit">Te avisaremos cuando puedas continuar</button>
+    </form>
+  </section>
+
+  <section id="paso2" hidden>
+    <div class="intro">
+      <h1>Tu app de Finanzas</h1>
+    </div>
+    <form class="card" id="form2" novalidate>
+      <div class="pregunta primera">¿Qué dolor te gustaría escalar?</div>
+      <p class="campo-ayuda">Eso que hoy te pesa con tu plata y quisieras resolver. Dilo con tus palabras.</p>
+      <label for="dolor" class="oculto">Tu respuesta</label>
+      <textarea id="dolor" name="dolor" maxlength="2000" rows="5" required placeholder="Escríbelo aquí…"></textarea>
+      <div class="error" id="error2" role="alert"></div>
       <button class="btn" id="enviar" type="submit">Enviar mi respuesta</button>
     </form>
   </section>
@@ -74,22 +89,34 @@
   <section id="listo" class="card gracias" hidden>
     <img class="foto" src="assets/andrea-y-tina.jpg" alt="Andrea y Tina, de Feminario">
     <h2>¡Gracias, <span id="quien"></span>! 💜</h2>
-    <p class="lead">Recibimos tu respuesta. Lo que esperas de una app de finanzas nos ayuda a construir una que sí te sirva.</p>
+    <p class="lead">Recibimos tus respuestas. Lo que nos cuentas nos ayuda a construir una app de finanzas que sí te sirva.</p>
     <p class="suave">Si quieres, comparte este enlace con otra mujer que quiera opinar.</p>
   </section>
 
   <footer class="pie">Hecho con cariño por Feminario · <a href="https://www.instagram.com/feminario.co/" target="_blank" rel="noopener">@feminario.co</a></footer>
 </main>
-<script src="assets/config.js?v=2"></script>
+<script src="assets/config.js?v=3"></script>
 <script src="assets/confeti.js"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var form = $("form"), err = $("error"), btn = $("enviar");
   var origen = "Evento ignia";   // todo lo que llega por este formulario se marca con este origen en la hoja
+  var datos = null;              // lo del paso 1, para mandarlo otra vez junto con el paso 2
   function marcar(el, mal) { el.style.borderColor = mal ? "var(--alerta)" : ""; }
-  form.addEventListener("submit", function (e) {
-    e.preventDefault(); err.textContent = "";
+  function enviar(etapa, extra) {
+    var api = (window.FB_CFG || {}).API_URL;
+    if (!api) return Promise.reject(new Error("sin-api"));
+    var cuerpo = JSON.stringify(Object.assign({ etapa: etapa, origen: origen, autorizo: true }, datos, extra || {}));
+    return fetch(api, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: cuerpo });
+  }
+  function ir(id) {
+    ["formulario", "paso2", "listo"].forEach(function (x) { $(x).hidden = x !== id; });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // PASO 1: datos y primera pregunta. El botón avisa que se les escribirá y lleva a la segunda pregunta; ya aquí se guarda lo que escribió.
+  $("form").addEventListener("submit", function (e) {
+    e.preventDefault(); var err = $("error"), btn = $("continuar"); err.textContent = "";
     var nombre = $("nombre").value.trim(), correo = $("correo").value.trim().toLowerCase(), celular = $("celular").value.trim(), resp = $("respuesta").value.trim();
     var digitos = celular.replace(/\D/g, "");
     var mal = { nombre: nombre.length < 2, correo: !/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(correo), celular: digitos.length < 7 || digitos.length > 15, respuesta: resp.length < 3 };
@@ -98,19 +125,27 @@
     if (mal.correo) { err.textContent = "Revisa tu correo: parece que le falta algo."; $("correo").focus(); return; }
     if (mal.celular) { err.textContent = "Escribe tu celular con el indicativo, por ejemplo +57 300 123 4567."; $("celular").focus(); return; }
     if (mal.respuesta) { err.textContent = "Cuéntanos tu respuesta, aunque sea corta."; $("respuesta").focus(); return; }
-    if (!$("ok").checked) { err.textContent = "Marca la autorización para poder enviar tu respuesta."; return; }
-    if ($("web").value) { mostrarGracias(nombre); return; }   // campo trampa para bots: no se envía nada
-    var api = (window.FB_CFG || {}).API_URL;
-    if (!api) { err.textContent = "Estamos terminando de conectar el formulario. Vuelve a intentarlo en un rato 💜"; return; }
+    if (!$("ok").checked) { err.textContent = "Marca la autorización para poder continuar."; return; }
+    datos = { nombre: nombre, correo: correo, celular: celular, respuesta: resp };
+    if ($("web").value) { datos = null; ir("paso2"); return; }   // campo trampa para bots: no se envía nada
+    if (!(window.FB_CFG || {}).API_URL) { err.textContent = "Estamos terminando de conectar el formulario. Vuelve a intentarlo en un rato 💜"; return; }
+    btn.disabled = true; btn.textContent = "Un momento…";
+    enviar(1).then(function () { btn.disabled = false; btn.textContent = "Te avisaremos cuando puedas continuar"; ir("paso2"); })
+      .catch(function () { btn.disabled = false; btn.textContent = "Te avisaremos cuando puedas continuar"; err.textContent = "No pudimos continuar. Revisa tu conexión e inténtalo de nuevo."; });
+  });
+
+  // PASO 2: la pregunta del dolor. Al enviarla sale el gracias.
+  $("form2").addEventListener("submit", function (e) {
+    e.preventDefault(); var err = $("error2"), btn = $("enviar"); err.textContent = "";
+    var dolor = $("dolor").value.trim(); marcar($("dolor"), dolor.length < 3);
+    if (dolor.length < 3) { err.textContent = "Cuéntanos tu respuesta, aunque sea corta."; $("dolor").focus(); return; }
+    if (!datos) { gracias("amiga"); return; }      // venía de la trampa para bots
     btn.disabled = true; btn.textContent = "Enviando…";
-    var cuerpo = JSON.stringify({ nombre: nombre, correo: correo, celular: celular, respuesta: resp, origen: origen, autorizo: true });
-    fetch(api, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: cuerpo })
-      .then(function () { mostrarGracias(nombre); })
+    enviar(2, { dolor: dolor }).then(function () { gracias(datos.nombre); })
       .catch(function () { btn.disabled = false; btn.textContent = "Enviar mi respuesta"; err.textContent = "No pudimos enviarla. Revisa tu conexión e inténtalo de nuevo."; });
   });
-  function mostrarGracias(nombre) {
-    $("quien").textContent = nombre.split(/\s+/)[0];
-    $("formulario").hidden = true; $("listo").hidden = false; window.scrollTo({ top: 0, behavior: "smooth" });
+  function gracias(nombre) {
+    $("quien").textContent = String(nombre).split(/\s+/)[0]; ir("listo");
     try { window.lanzarConfeti && window.lanzarConfeti({ n: 160 }); } catch (e) {}
   }
 })();

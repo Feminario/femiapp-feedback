@@ -3,8 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tu voz para la Femiapp · Feminario</title>
-<meta name="description" content="Cuéntanos qué esperas que una app de finanzas hiciera por ti. Una pregunta, un minuto.">
+<title>Tu app de Finanzas · Feminario</title>
+<meta name="description" content="Cuéntanos qué esperas que una app de finanzas hiciera por ti.">
+<link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@600;800&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/marca.css">
 <style>
@@ -12,7 +15,7 @@
   .marca{ text-align:center; margin-bottom:6px; }
   .marca img{ width:150px; }
   .pill{ display:inline-block; background:rgba(255,255,255,.7); border:1px solid var(--vidrio-borde); border-radius:999px; padding:6px 14px; font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--morado); }
-  .intro{ text-align:center; margin:14px 0 22px; }
+  .intro{ text-align:center; margin:10px 0 18px; }
   .intro h1{ font-size:clamp(28px,8vw,38px); color:var(--morado-oscuro); margin:12px 0 8px; line-height:1.1; font-weight:800; }
   .intro p{ margin:0 auto; max-width:440px; font-size:15.5px; }
   .estrella{ position:absolute; width:46px; pointer-events:none; opacity:.9; animation:flota 5s ease-in-out infinite; }
@@ -42,9 +45,7 @@
 
   <section id="formulario">
     <div class="intro">
-      <span class="pill">Femiapp · Tu opinión cuenta</span>
-      <h1>Tu voz construye la Femiapp</h1>
-      <p>Una pregunta, un minuto. Lo que nos cuentes nos ayuda a hacer una app de finanzas pensada por y para mujeres.</p>
+      <h1>Tu app de Finanzas</h1>
     </div>
 
     <form class="card" id="form" novalidate>
@@ -85,7 +86,7 @@
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var form = $("form"), err = $("error"), btn = $("enviar");
-  var origen = (location.search.match(/[?&]origen=([\w-]+)/) || [])[1] || "directo";
+  var origen = "Evento ignia";   // todo lo que llega por este formulario se marca con este origen en la hoja
   function marcar(el, mal) { el.style.borderColor = mal ? "var(--alerta)" : ""; }
   form.addEventListener("submit", function (e) {
     e.preventDefault(); err.textContent = "";

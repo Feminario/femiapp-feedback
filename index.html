@@ -28,7 +28,7 @@
   .error{ color:var(--alerta); font-size:13px; font-weight:600; min-height:18px; margin-top:12px; }
   .oculto{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
   .gracias{ text-align:center; padding:34px 22px; }
-  .gracias img{ width:120px; margin:0 auto 6px; display:block; }
+  .gracias .foto{ width:100%; max-width:380px; height:auto; margin:0 auto 18px; display:block; border-radius:26px; border:4px solid #fff; box-shadow:0 14px 34px rgba(76,79,104,.22); }
   .gracias h2{ font-size:28px; }
   .pie{ text-align:center; font-size:12px; color:var(--morado-suave); margin-top:26px; }
   .pie a{ color:var(--morado); }
@@ -72,7 +72,7 @@
   </section>
 
   <section id="listo" class="card gracias" hidden>
-    <img src="assets/forma-estrella.png" alt="">
+    <img class="foto" src="assets/andrea-y-tina.jpg" alt="Andrea y Tina, de Feminario">
     <h2>¡Gracias, <span id="quien"></span>! 💜</h2>
     <p class="lead">Recibimos tu respuesta. Lo que esperas de una app de finanzas nos ayuda a construir una que sí te sirva.</p>
     <p class="suave">Si quieres, comparte este enlace con otra mujer que quiera opinar.</p>

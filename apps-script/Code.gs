@@ -11,7 +11,8 @@
  */
 var SHEET_ID = "1D9tDfr-ABr-0PomegBH1DSnFyUXkZR4MVsGqHqvugkc";
 var HOJA = "Hoja 1";
-var PREGUNTA = "¿Qué esperas que una app de finanzas hiciera por ti?";
+var PREGUNTA = "¿Qué esperarías que una app de finanzas hiciera por ti?";
+var PREGUNTA_ANTES = "¿Qué esperas que una app de finanzas hiciera por ti?";            // título anterior: si la columna ya existe con él, solo se le cambia el encabezado (no se crea otra)
 var ORIGEN = "Evento ignia";
 
 // Los encabezados pueden traer espacios invisibles o mayúsculas distintas: se comparan normalizados

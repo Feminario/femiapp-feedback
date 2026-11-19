@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tu voz para la Femiapp · Feminario</title>
+<meta name="description" content="Cuéntanos qué esperas que una app de finanzas hiciera por ti. Una pregunta, un minuto.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@600;800&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/marca.css">
+<style>
+  .wrap{ max-width:560px; margin:0 auto; padding:26px 16px 56px; position:relative; }
+  .marca{ text-align:center; margin-bottom:6px; }
+  .marca img{ width:150px; }
+  .pill{ display:inline-block; background:rgba(255,255,255,.7); border:1px solid var(--vidrio-borde); border-radius:999px; padding:6px 14px; font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--morado); }
+  .intro{ text-align:center; margin:14px 0 22px; }
+  .intro h1{ font-size:clamp(28px,8vw,38px); color:var(--morado-oscuro); margin:12px 0 8px; line-height:1.1; font-weight:800; }
+  .intro p{ margin:0 auto; max-width:440px; font-size:15.5px; }
+  .estrella{ position:absolute; width:46px; pointer-events:none; opacity:.9; animation:flota 5s ease-in-out infinite; }
+  .e1{ top:14px; left:6px; } .e2{ top:92px; right:4px; width:38px; animation-delay:1.2s; }
+  @keyframes flota{ 0%,100%{ transform:translateY(0) rotate(0); } 50%{ transform:translateY(-8px) rotate(8deg); } }
+  .pregunta{ font-family:'MuseoModerno','Montserrat',sans-serif; color:var(--morado-oscuro); font-size:21px; font-weight:800; line-height:1.25; margin:26px 0 4px; }
+  .campo-ayuda{ font-size:12.5px; color:var(--morado-suave); margin:2px 0 0; }
+  .check{ display:flex; gap:10px; align-items:flex-start; font-weight:500; font-size:12.5px; line-height:1.45; margin:18px 0 0; color:var(--texto); }
+  .check input{ margin-top:3px; flex:none; width:18px; height:18px; accent-color:var(--morado); }
+  .error{ color:var(--alerta); font-size:13px; font-weight:600; min-height:18px; margin-top:12px; }
+  .oculto{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+  .gracias{ text-align:center; padding:34px 22px; }
+  .gracias img{ width:120px; margin:0 auto 6px; display:block; }
+  .gracias h2{ font-size:28px; }
+  .pie{ text-align:center; font-size:12px; color:var(--morado-suave); margin-top:26px; }
+  .pie a{ color:var(--morado); }
+  .btn[disabled]{ opacity:.6; }
+  [hidden]{ display:none !important; }
+</style>
+</head>
+<body>
+<div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div><div class="blob blob-4"></div>
+<main class="wrap">
+  <img class="estrella e1" src="assets/forma-estrella-morada.png" alt="">
+  <img class="estrella e2" src="assets/forma-destello.png" alt="">
+  <header class="marca"><img src="assets/logo-feminario.png" alt="Feminario"></header>
+
+  <section id="formulario">
+    <div class="intro">
+      <span class="pill">Femiapp · Tu opinión cuenta</span>
+      <h1>Tu voz construye la Femiapp</h1>
+      <p>Una pregunta, un minuto. Lo que nos cuentes nos ayuda a hacer una app de finanzas pensada por y para mujeres.</p>
+    </div>
+
+    <form class="card" id="form" novalidate>
+      <label for="nombre">Tu nombre</label>
+      <input type="text" id="nombre" name="nombre" autocomplete="name" maxlength="120" required>
+
+      <label for="correo">Tu correo</label>
+      <input type="text" inputmode="email" id="correo" name="correo" autocomplete="email" maxlength="160" required>
+
+      <label for="celular">Tu celular</label>
+      <input type="text" inputmode="tel" id="celular" name="celular" autocomplete="tel" maxlength="30" placeholder="Con indicativo, ej. +57 300 123 4567" required>
+
+      <div class="pregunta">¿Qué esperas que una app de finanzas hiciera por ti?</div>
+      <p class="campo-ayuda">Cuéntanos con tus palabras: no hay respuestas buenas ni malas.</p>
+      <label for="respuesta" class="oculto">Tu respuesta</label>
+      <textarea id="respuesta" name="respuesta" maxlength="2000" rows="5" required placeholder="Escríbela aquí…"></textarea>
+
+      <div class="oculto" aria-hidden="true"><label for="web">Deja este campo vacío</label><input type="text" id="web" name="web" tabindex="-1" autocomplete="off"></div>
+
+      <label class="check"><input type="checkbox" id="ok"> Autorizo a Feminario a tratar mis datos (nombre, correo, celular y respuesta) para mejorar la Femiapp y contactarme sobre ella.</label>
+      <div class="error" id="error" role="alert"></div>
+      <button class="btn" id="enviar" type="submit">Enviar mi respuesta</button>
+    </form>
+  </section>
+
+  <section id="listo" class="card gracias" hidden>
+    <img src="assets/forma-estrella.png" alt="">
+    <h2>¡Gracias, <span id="quien"></span>! 💜</h2>
+    <p class="lead">Recibimos tu respuesta. Lo que esperas de una app de finanzas nos ayuda a construir una que sí te sirva.</p>
+    <p class="suave">Si quieres, comparte este enlace con otra mujer que quiera opinar.</p>
+  </section>
+
+  <footer class="pie">Hecho con cariño por Feminario · <a href="https://www.instagram.com/feminario.co/" target="_blank" rel="noopener">@feminario.co</a></footer>
+</main>
+<script src="assets/config.js"></script>
+<script src="assets/confeti.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var form = $("form"), err = $("error"), btn = $("enviar");
+  var origen = (location.search.match(/[?&]origen=([\w-]+)/) || [])[1] || "directo";
+  function marcar(el, mal) { el.style.borderColor = mal ? "var(--alerta)" : ""; }
+  form.addEventListener("submit", function (e) {
+    e.preventDefault(); err.textContent = "";
+    var nombre = $("nombre").value.trim(), correo = $("correo").value.trim().toLowerCase(), celular = $("celular").value.trim(), resp = $("respuesta").value.trim();
+    var digitos = celular.replace(/\D/g, "");
+    var mal = { nombre: nombre.length < 2, correo: !/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(correo), celular: digitos.length < 7 || digitos.length > 15, respuesta: resp.length < 3 };
+    ["nombre", "correo", "celular", "respuesta"].forEach(function (k) { marcar($(k), mal[k]); });
+    if (mal.nombre) { err.textContent = "Escribe tu nombre."; $("nombre").focus(); return; }
+    if (mal.correo) { err.textContent = "Revisa tu correo: parece que le falta algo."; $("correo").focus(); return; }
+    if (mal.celular) { err.textContent = "Escribe tu celular con el indicativo, por ejemplo +57 300 123 4567."; $("celular").focus(); return; }
+    if (mal.respuesta) { err.textContent = "Cuéntanos tu respuesta, aunque sea corta."; $("respuesta").focus(); return; }
+    if (!$("ok").checked) { err.textContent = "Marca la autorización para poder enviar tu respuesta."; return; }
+    if ($("web").value) { mostrarGracias(nombre); return; }   // campo trampa para bots: no se envía nada
+    var api = (window.FB_CFG || {}).API_URL;
+    if (!api) { err.textContent = "Estamos terminando de conectar el formulario. Vuelve a intentarlo en un rato 💜"; return; }
+    btn.disabled = true; btn.textContent = "Enviando…";
+    var cuerpo = JSON.stringify({ nombre: nombre, correo: correo, celular: celular, respuesta: resp, origen: origen, autorizo: true });
+    fetch(api, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: cuerpo })
+      .then(function () { mostrarGracias(nombre); })
+      .catch(function () { btn.disabled = false; btn.textContent = "Enviar mi respuesta"; err.textContent = "No pudimos enviarla. Revisa tu conexión e inténtalo de nuevo."; });
+  });
+  function mostrarGracias(nombre) {
+    $("quien").textContent = nombre.split(/\s+/)[0];
+    $("formulario").hidden = true; $("listo").hidden = false; window.scrollTo({ top: 0, behavior: "smooth" });
+    try { window.lanzarConfeti && window.lanzarConfeti({ n: 160 }); } catch (e) {}
+  }
+})();
+</script>
+</body>
+</html>

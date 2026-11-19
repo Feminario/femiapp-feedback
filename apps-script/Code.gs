@@ -5,8 +5,8 @@
  *  · PASO 2 (etapa 2): completa ESA misma fila (la más reciente con ese correo y ese origen) con «¿Qué dolor te gustaría escalar?».
  * Las columnas se buscan por su encabezado; las dos de preguntas se crean al final la primera vez. No se toca ninguna otra columna.
  *
- * PANEL /admin (nube de palabras): GET ?accion=palabras&clave=... devuelve SOLO los textos de las dos preguntas (sin nombres, correos ni celulares).
- * Exige la clave que tú pongas en Configuración del proyecto → Propiedades del script → CLAVE_ADMIN. Sin esa propiedad, nadie puede leer nada.
+ * PANEL /admin (nube de palabras, sin clave): GET ?accion=palabras devuelve SOLO el conteo de palabras de las dos preguntas
+ * (nunca las frases, ni nombres, correos o celulares), de las filas con Origen «Evento ignia».
  *
  * Instalación / actualización: pega este archivo en el proyecto → Implementar → Administrar implementaciones → editar → Nueva versión → Implementar.
  */
@@ -87,23 +87,41 @@ function doPost(e) {
   } finally { lock.releaseLock(); }
 }
 
+var STOP = {};
+("a al algo algun alguna algunas alguno algunos ante antes aqui asi aun aunque bien cada casi como con contra cosas cual cuando de del desde donde dos e el ella ellas ello ellos en entre era eran es esa esas ese eso esos esta estan estar este esto estos fue fueron ha hace hacen hacer hacia han hasta hay hoy la las le les lo los mas me mi mis misma mismo mucho muchos muy nada ni no nos nuestra nuestro o otra otras otro otros para pero poco por porque pues que quien se sea ser si sido sin sobre solo su sus tambien tan tanto te tener tengo tiene tienen todo todas todos tu tus un una uno unos usted y ya yo quiero quisiera queria gustaria esperaria esperarias seria podria pudiera puedo pueda puedan poder deberia debe hiciera hacerlo hacerme haga hagan ayude ayudara ayudaria ayudar app apps aplicacion aplicaciones finanzas finanza persona personas cosa vez veces manera forma tipo parte ahora siempre nunca ademas aca ahi entonces mejor vida dia dias").split(" ").forEach(function (w) { STOP[w] = 1; });
+function sinTilde_(t) { return t.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+
+// Cuenta palabras (sin conectores). Devuelve [[palabra, veces], …]: nunca las frases completas
+function palabras_(textos) {
+  var cuenta = {}, forma = {};
+  textos.forEach(function (t) {
+    (String(t).toLowerCase().match(/[a-záéíóúüñ]+/g) || []).forEach(function (w) {
+      var k = sinTilde_(w);
+      if (k.length < 3 || STOP[k]) return;
+      cuenta[k] = (cuenta[k] || 0) + 1;
+      forma[k] = forma[k] || {}; forma[k][w] = (forma[k][w] || 0) + 1;
+    });
+  });
+  return Object.keys(cuenta).map(function (k) {
+    var f = Object.keys(forma[k]).sort(function (a, b) { return forma[k][b] - forma[k][a]; })[0];
+    return [f, cuenta[k]];
+  }).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 150);
+}
+
 function doGet(e) {
   var p = (e && e.parameter) || {};
-  if (p.accion === "palabras") {
-    var clave = PropertiesService.getScriptProperties().getProperty("CLAVE_ADMIN");
-    if (!clave || String(p.clave || "") !== clave) return out_({ ok: false, error: "no autorizado" });
+  if (p.accion === "palabras") {                                      // panel /admin: abierto, pero SOLO devuelve conteos de palabras (sin frases, nombres, correos ni celulares)
     try {
       var h = preparar_(), hoja = h.hoja, n = hoja.getLastRow(), cOrigen = h.col("Origen");
-      var p1 = [], p2 = [];
+      var t1 = [], t2 = [];
       if (n > 1) {
-        var vals = hoja.getRange(2, 1, n - 1, h.titulos.length).getValues();
-        vals.forEach(function (r) {
+        hoja.getRange(2, 1, n - 1, h.titulos.length).getValues().forEach(function (r) {
           if (cOrigen >= 0 && norm_(r[cOrigen]) !== norm_(ORIGEN)) return;     // solo lo del formulario del evento
           var a = String(r[h.cP1] || "").trim(), b = String(r[h.cP2] || "").trim();
-          if (a) p1.push(a); if (b) p2.push(b);
+          if (a) t1.push(a); if (b) t2.push(b);
         });
       }
-      return out_({ ok: true, total: Math.max(p1.length, p2.length), p1: p1, p2: p2 });
+      return out_({ ok: true, n1: t1.length, n2: t2.length, p1: palabras_(t1), p2: palabras_(t2) });
     } catch (err) { return out_({ ok: false, error: String(err) }); }
   }
   return out_({ ok: true, service: "feminario-tu-app-de-finanzas" });

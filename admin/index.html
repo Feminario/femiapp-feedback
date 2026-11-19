@@ -23,7 +23,7 @@
   .btn.chico{ margin-top:0; }
   .ocultar{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:12px; font-size:13px; }
   .ocultar input{ flex:1; min-width:220px; width:auto; padding:10px 14px; border-radius:999px; }
-  .lienzo{ background:linear-gradient(160deg,#fff 0%,#F9E1FF 55%,#DFF3AF 130%); border:1px solid var(--vidrio-borde); border-radius:34px; padding:26px 26px 18px; box-shadow:0 20px 50px rgba(76,79,104,.16); }
+  .lienzo{ background:#fff; border:1px solid #E4E5EE; border-radius:28px; padding:28px 28px 18px; box-shadow:0 8px 30px rgba(76,79,104,.07); }
   .lienzo header{ display:flex; justify-content:space-between; align-items:flex-start; gap:14px; flex-wrap:wrap; }
   .lienzo h1{ font-size:clamp(22px,3.4vw,36px); color:var(--morado-oscuro); margin:0; line-height:1.15; font-weight:800; max-width:760px; }
   .lienzo .cuenta{ font-size:13px; color:var(--morado); font-weight:700; margin-top:6px; }
@@ -38,7 +38,10 @@
   .error{ color:var(--alerta); font-size:13px; font-weight:600; min-height:18px; margin-top:10px; }
   .ejemplo{ background:var(--durazno); color:var(--morado-oscuro); border-radius:14px; padding:8px 14px; font-size:13px; font-weight:700; margin-bottom:12px; }
   body.captura .barra, body.captura .controles, body.captura .ocultar, body.captura .top, body.captura .ejemplo{ display:none !important; }
+  body.captura{ background:#fff; }
+  body.captura .blob{ display:none; }
   body.captura .wrap{ max-width:1500px; padding:14px; }
+  body.captura .lienzo{ border:0; box-shadow:none; }
   body.captura .lienzo{ min-height:calc(100vh - 28px); display:flex; flex-direction:column; justify-content:center; }
   .aviso-captura{ position:fixed; left:50%; bottom:12px; transform:translateX(-50%); background:rgba(76,79,104,.85); color:#fff; font-size:12px; padding:6px 14px; border-radius:999px; opacity:.0; pointer-events:none; }
   [hidden]{ display:none !important; }
@@ -48,19 +51,9 @@
 <div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div><div class="blob blob-4"></div>
 <main class="wrap">
 
-  <section id="acceso" class="card acceso" hidden>
-    <img src="../assets/logo-feminario.png" alt="Feminario" style="width:140px;margin-bottom:10px">
-    <h2>Panel del evento</h2>
-    <p class="suave">Solo para el equipo. Escribe tu clave para ver la nube de palabras.</p>
-    <label for="clave" class="oculto" style="position:absolute;left:-9999px">Clave</label>
-    <input type="password" id="clave" autocomplete="current-password" placeholder="Tu clave">
-    <div class="error" id="err-acceso" role="alert"></div>
-    <button class="btn" id="entrar" type="button">Entrar</button>
-  </section>
-
-  <section id="panel" hidden>
+  <section id="panel">
     <div class="barra"><span class="pill">Panel · Tu app de Finanzas</span><img src="../assets/logo-feminario.png" alt="Feminario"></div>
-    <div class="ejemplo" id="ejemplo" hidden>Datos de EJEMPLO para ver cómo queda. Las respuestas reales aparecen al entrar con tu clave.</div>
+    <div class="ejemplo" id="ejemplo" hidden>Datos de EJEMPLO para ver cómo queda. Las respuestas reales aparecen aquí cuando la gente responde.</div>
 
     <div class="controles">
       <button class="tab on" data-v="p1" type="button">Lo que esperarían de una app</button>
@@ -88,7 +81,7 @@
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"></script>
-<script src="../assets/config.js?v=3"></script>
+<script src="../assets/config.js?v=4"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
@@ -96,84 +89,74 @@
   var DEMO = /[?&]demo=1/.test(location.search);
   var TITULOS = { p1: "¿Qué esperarían que una app de finanzas hiciera por ellas?", p2: "¿Qué dolor les gustaría escalar?", todas: "Lo que dicen las mujeres sobre su plata" };
   var datos = null, vista = "p1";
-  var PALETA = ["#4C4F68", "#7E84AE", "#CEA2DD", "#F59356", "#B24A72", "#3E8F63", "#8A90B8"];
-  var STOP = new Set(("a al algo algun alguna algunas alguno algunos ante antes aqui asi aun aunque bien cada casi como con contra cosas cual cuando de del desde donde dos e el ella ellas ello ellos en entre era eran es esa esas ese eso esos esta estan estar este esto estos fue fueron ha hace hacen hacer hacia han hasta hay hoy la las le les lo los mas me mi mis misma mismo mucho muchos muy nada ni no nos nuestra nuestro o otra otras otro otros para pero poco por porque pues que quien se sea ser si sido sin sobre solo su sus tambien tan tanto te tener tengo tiene tienen todo todas todos tu tus un una uno unos usted y ya yo quiero quisiera queria gustaria gustaria esperaria esperarias seria podria pudiera puedo pueda puedan poder deberia debe hiciera hacerlo hacerme haga hagan ayude ayudara ayudaria ayudar app apps aplicacion aplicaciones finanzas finanza persona personas cosa vez veces manera forma tipo parte ahora siempre nunca algo ademas aca ahi entonces mejor mismo vida dia dias").split(" "));
-  var sinTilde = function (t) { return t.normalize("NFD").replace(/[̀-ͯ]/g, ""); };
+  var PALETA = ["#4C4F68", "#7E84AE", "#8A90B8", "#A7ABC8"];   // neutros de la identidad: de más oscuro (palabras más frecuentes) a más suave
+  var STOP = new Set(("a al algo algun alguna algunas alguno algunos ante antes aqui asi aun aunque bien cada casi como con contra cosas cual cuando de del desde donde dos e el ella ellas ello ellos en entre era eran es esa esas ese eso esos esta estan estar este esto estos fue fueron ha hace hacen hacer hacia han hasta hay hoy la las le les lo los mas me mi mis misma mismo mucho muchos muy nada ni no nos nuestra nuestro o otra otras otro otros para pero poco por porque pues que quien se sea ser si sido sin sobre solo su sus tambien tan tanto te tener tengo tiene tienen todo todas todos tu tus un una uno unos usted y ya yo quiero quisiera queria gustaria esperaria esperarias seria podria pudiera puedo pueda puedan poder deberia debe hiciera hacerlo hacerme haga hagan ayude ayudara ayudaria ayudar app apps aplicacion aplicaciones finanzas finanza persona personas cosa vez veces manera forma tipo parte ahora siempre nunca ademas aca ahi entonces mejor vida dia dias").split(" "));
+  var sinTilde = function (t) { return t.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); };
 
-  function ejemplo() {
-    return { ok: true, total: 18,
-      p1: ["Que me ayude a ahorrar sin sentir culpa", "Quiero entender mis gastos y ahorrar cada mes", "Que me enseñe a invertir paso a paso, sin tecnicismos", "Organizar mi plata y mis deudas en un solo lugar", "Que me recuerde ahorrar y me muestre mi progreso", "Entender dónde se me va el dinero", "Aprender a invertir con poco dinero", "Que me ayude a salir de deudas y tener tranquilidad", "Un presupuesto fácil que sí pueda cumplir", "Que me motive a ahorrar y a invertir", "Claridad sobre mis gastos y mis metas", "Que me acompañe a construir mi fondo de emergencia"],
-      p2: ["Las deudas de la tarjeta", "No sé invertir y me da miedo", "No logro ahorrar a fin de mes", "Depender de otra persona para mi plata", "Ahorrar para mi fondo de emergencia", "El miedo a invertir", "Salir de deudas", "No tener un presupuesto claro", "Ahorrar para mi casa", "Aprender a invertir"] };
-  }
-
-  function normalizadas(textos, extra) {
+  // Solo para la vista de ejemplo: la misma cuenta que hace el script con las respuestas reales
+  function contar(textos) {
     var cuenta = {}, forma = {};
-    textos.forEach(function (t) {
-      (String(t).toLowerCase().match(/[\p{L}]+/gu) || []).forEach(function (w) {
-        var k = sinTilde(w);
-        if (k.length < 3 || STOP.has(k) || extra.has(k)) return;
-        cuenta[k] = (cuenta[k] || 0) + 1;
-        forma[k] = forma[k] || {}; forma[k][w] = (forma[k][w] || 0) + 1;
-      });
-    });
-    return Object.keys(cuenta).map(function (k) {
-      var f = Object.keys(forma[k]).sort(function (a, b) { return forma[k][b] - forma[k][a]; })[0];
-      return [f, cuenta[k]];
-    }).sort(function (a, b) { return b[1] - a[1]; });
+    textos.forEach(function (t) { (String(t).toLowerCase().match(/[\p{L}]+/gu) || []).forEach(function (w) { var k = sinTilde(w); if (k.length < 3 || STOP.has(k)) return; cuenta[k] = (cuenta[k] || 0) + 1; forma[k] = forma[k] || {}; forma[k][w] = (forma[k][w] || 0) + 1; }); });
+    return Object.keys(cuenta).map(function (k) { var f = Object.keys(forma[k]).sort(function (a, b) { return forma[k][b] - forma[k][a]; })[0]; return [f, cuenta[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
   }
-  function excluidas() { return new Set(($("excluir").value || "").split(",").map(function (x) { return sinTilde(x.trim().toLowerCase()); }).filter(Boolean)); }
+  function ejemplo() {
+    var p1 = ["Que me ayude a ahorrar sin sentir culpa", "Quiero entender mis gastos y ahorrar cada mes", "Que me enseñe a invertir paso a paso, sin tecnicismos", "Organizar mi plata y mis deudas en un solo lugar", "Que me recuerde ahorrar y me muestre mi progreso", "Entender dónde se me va el dinero", "Aprender a invertir con poco dinero", "Que me ayude a salir de deudas y tener tranquilidad", "Un presupuesto fácil que sí pueda cumplir", "Que me motive a ahorrar y a invertir", "Claridad sobre mis gastos y mis metas", "Que me acompañe a construir mi fondo de emergencia"];
+    var p2 = ["Las deudas de la tarjeta", "No sé invertir y me da miedo", "No logro ahorrar a fin de mes", "Depender de otra persona para mi plata", "Ahorrar para mi fondo de emergencia", "El miedo a invertir", "Salir de deudas", "No tener un presupuesto claro", "Ahorrar para mi casa", "Aprender a invertir"];
+    return { ok: true, n1: p1.length, n2: p2.length, p1: contar(p1), p2: contar(p2) };
+  }
+
+  function listaDeVista() {
+    var base = vista === "p1" ? datos.p1 : vista === "p2" ? datos.p2 : null;
+    if (!base) {                                                       // todas: se suman las dos listas
+      var m = {}; datos.p1.concat(datos.p2).forEach(function (x) { var k = sinTilde(x[0]); (m[k] = m[k] || [x[0], 0])[1] += x[1]; });
+      base = Object.keys(m).map(function (k) { return m[k]; }).sort(function (a, b) { return b[1] - a[1]; });
+    }
+    var fuera = new Set(($("excluir").value || "").split(",").map(function (x) { return sinTilde(x.trim().toLowerCase()); }).filter(Boolean));
+    return base.filter(function (x) { return !fuera.has(sinTilde(x[0])); }).slice(0, 90);
+  }
 
   function pintar() {
     if (!datos) return;
-    var textos = vista === "p1" ? datos.p1 : vista === "p2" ? datos.p2 : datos.p1.concat(datos.p2);
-    var lista = normalizadas(textos, excluidas()).slice(0, 90);
+    var lista = listaDeVista(), n = vista === "p1" ? datos.n1 : vista === "p2" ? datos.n2 : Math.max(datos.n1, datos.n2);
     $("titulo").textContent = TITULOS[vista];
-    $("cuenta").textContent = textos.length + (textos.length === 1 ? " respuesta" : " respuestas") + (lista.length ? " · " + lista.length + " palabras" : "");
-    var cv = $("cv"), W = Math.max(320, $("nube").clientWidth), H = Math.round(W * (document.body.classList.contains("captura") ? 0.52 : 0.5));
+    $("cuenta").textContent = n + (n === 1 ? " respuesta" : " respuestas") + (lista.length ? " · " + lista.length + " palabras" : "");
+    var cv = $("cv"), W = Math.max(320, $("nube").clientWidth), H = Math.round(W * 0.5);
     var dpr = Math.min(window.devicePixelRatio || 1, 2.5);
     cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + "px";
     cv.getContext("2d").clearRect(0, 0, cv.width, cv.height);
-    $("vacio").hidden = lista.length > 0; $("vacio").textContent = textos.length ? "No quedan palabras para mostrar (revisa «Ocultar palabras»)." : "Todavía no hay respuestas.";
-    $("top").innerHTML = lista.slice(0, 12).map(function (x) { return "<span><b>" + x[1] + "</b> · " + x[0].replace(/[<>&]/g, "") + "</span>"; }).join("");
+    $("vacio").hidden = lista.length > 0; $("vacio").textContent = n ? "No quedan palabras para mostrar (revisa «Ocultar palabras»)." : "Todavía no hay respuestas.";
+    $("top").innerHTML = lista.slice(0, 12).map(function (x) { return "<span><b>" + x[1] + "</b> · " + String(x[0]).replace(/[<>&]/g, "") + "</span>"; }).join("");
     if (!lista.length) return;
     var max = lista[0][1], min = lista[lista.length - 1][1], base = W / 14;
     WordCloud(cv, {
-      list: lista, gridSize: Math.round(W / 90 * dpr), backgroundColor: "rgba(0,0,0,0)",
-      fontFamily: "Montserrat, 'MuseoModerno', sans-serif", fontWeight: "800",
+      list: lista, gridSize: Math.round(W / 70 * dpr), backgroundColor: "rgba(0,0,0,0)",
+      fontFamily: "Montserrat, sans-serif", fontWeight: "700",
       weightFactor: function (v) { var t = max === min ? 1 : (v - min) / (max - min); return (base * 0.55 + base * 1.55 * Math.pow(t, 0.8)) * dpr; },
-      color: function (w, v, fs, d, i) { return PALETA[Math.floor(Math.random() * PALETA.length)]; },
-      rotateRatio: 0.25, rotationSteps: 2, minRotation: -Math.PI / 2, maxRotation: -Math.PI / 2,
+      color: function (w, v) { var t = max === min ? 1 : (v - min) / (max - min); return t > 0.66 ? PALETA[0] : t > 0.33 ? PALETA[1] : t > 0.12 ? PALETA[2] : PALETA[3]; },
+      rotateRatio: 0.12, rotationSteps: 2, minRotation: -Math.PI / 2, maxRotation: -Math.PI / 2,
       shuffle: false, shrinkToFit: true, drawOutOfBound: false, ellipticity: 0.62, origin: [cv.width / 2, cv.height / 2]
     });
   }
 
   function cargar() {
     $("error").textContent = "";
-    if (DEMO) { datos = ejemplo(); $("ejemplo").hidden = false; mostrarPanel(); pintar(); return Promise.resolve(); }
-    var clave = sessionStorage.getItem("fb_clave") || "";
-    if (!API) { mostrarAcceso("El formulario aún no está conectado."); return Promise.resolve(); }
-    if (!clave) { mostrarAcceso(""); return Promise.resolve(); }
-    return fetch(API + "?accion=palabras&clave=" + encodeURIComponent(clave)).then(function (r) { return r.json(); }).then(function (j) {
-      if (!j.ok) { sessionStorage.removeItem("fb_clave"); mostrarAcceso(j.error === "no autorizado" ? "Clave incorrecta." : "No pude leer las respuestas: " + (j.error || "error")); return; }
-      datos = j; mostrarPanel(); pintar();
-    }).catch(function () { $("error").textContent = "No pude conectarme. Revisa tu conexión y toca Actualizar."; if (datos) return; mostrarAcceso("No pude conectarme. Inténtalo otra vez."); });
+    if (DEMO) { datos = ejemplo(); $("ejemplo").hidden = false; pintar(); return; }
+    if (!API) { $("error").textContent = "El formulario aún no está conectado."; return; }
+    fetch(API + "?accion=palabras").then(function (r) { return r.json(); }).then(function (j) {
+      if (!j.ok) { $("error").textContent = "No pude leer las respuestas: " + (j.error || "error"); return; }
+      datos = j; pintar();
+    }).catch(function () { $("error").textContent = "No pude conectarme. Revisa tu conexión y toca Actualizar."; });
   }
-  function mostrarAcceso(msg) { $("panel").hidden = true; $("acceso").hidden = false; $("err-acceso").textContent = msg || ""; }
-  function mostrarPanel() { $("acceso").hidden = true; $("panel").hidden = false; }
 
-  $("entrar").onclick = function () { var c = $("clave").value.trim(); if (!c) { $("err-acceso").textContent = "Escribe tu clave."; return; } try { sessionStorage.setItem("fb_clave", c); } catch (e) {} cargar(); };
-  $("clave").addEventListener("keydown", function (e) { if (e.key === "Enter") $("entrar").click(); });
   document.querySelectorAll(".tab").forEach(function (b) { b.onclick = function () { vista = b.getAttribute("data-v"); document.querySelectorAll(".tab").forEach(function (x) { x.classList.toggle("on", x === b); }); pintar(); }; });
-  $("actualizar").onclick = function () { cargar(); };
+  $("actualizar").onclick = cargar;
   $("excluir").addEventListener("input", function () { try { localStorage.setItem("fb_excluir", $("excluir").value); } catch (e) {} pintar(); });
   try { $("excluir").value = localStorage.getItem("fb_excluir") || ""; } catch (e) {}
   $("captura").onclick = function () {
     document.body.classList.add("captura"); setTimeout(pintar, 60);
     var a = $("aviso-captura"); a.style.opacity = ".9"; setTimeout(function () { a.style.opacity = "0"; }, 2500);
-    a.style.display = "block";
   };
-  function salirCaptura() { if (document.body.classList.contains("captura")) { document.body.classList.remove("captura"); setTimeout(pintar, 60); } }
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") salirCaptura(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && document.body.classList.contains("captura")) { document.body.classList.remove("captura"); setTimeout(pintar, 60); } });
   var rz; window.addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(pintar, 150); });
   cargar();
 })();

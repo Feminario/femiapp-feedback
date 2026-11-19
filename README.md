@@ -17,8 +17,8 @@ Cada respuesta se agrega como una fila nueva a **LEADS CLUB 365 - 3RA COHORTE** 
 Mientras `API_URL` esté vacía, el formulario avisa que aún no está conectado y no simula el envío.
 
 ## Panel /admin (nube de palabras para el screenshot)
-- Pide una clave. La clave **no está en el repo**: se define en el Apps Script → Configuración del proyecto → **Propiedades del script** → `CLAVE_ADMIN`. Sin esa propiedad nadie puede leer nada.
-- Lee solo los textos de las dos preguntas (nunca nombres, correos ni celulares) de las filas con Origen «Evento ignia».
+- Sin clave. El script solo devuelve el **conteo de palabras** de las dos preguntas (nunca las frases completas, ni nombres, correos o celulares), de las filas con Origen «Evento ignia».
+- Fondo blanco y neutros de la identidad (los más frecuentes en el morado oscuro, los demás más suaves).
 - Pestañas: lo que esperarían de una app · el dolor que quieren escalar · todas las palabras. Caja **Ocultar palabras** para quitar ruido (app, finanzas…).
 - **Modo captura:** deja solo el título y la nube a pantalla completa para el screenshot; `Esc` para salir.
 

@@ -5,8 +5,8 @@
  *  · PASO 2 (etapa 2): completa ESA misma fila (la más reciente con ese correo y ese origen) con «¿Qué dolor te gustaría escalar?».
  * Las columnas se buscan por su encabezado; las dos de preguntas se crean al final la primera vez. No se toca ninguna otra columna.
  *
- * PANEL /admin (nube de palabras, sin clave): GET ?accion=palabras devuelve SOLO el conteo de palabras de «¿Qué dolor te gustaría escalar?»
- * (nunca las frases, ni nombres, correos o celulares), de las filas con Origen «Evento ignia».
+ * PANEL /admin (nube, sin clave): GET ?accion=palabras devuelve las respuestas a «¿Qué dolor te gustaría escalar?» TAL CUAL las escribieron
+ * (sin nombres, correos ni celulares), de las filas con Origen «Evento ignia».
  *
  * Instalación / actualización: pega este archivo en el proyecto → Implementar → Administrar implementaciones → editar → Nueva versión → Implementar.
  */
@@ -121,7 +121,7 @@ function doGet(e) {
           if (b) t2.push(b);
         });
       }
-      return out_({ ok: true, n: t2.length, p: palabras_(t2) });
+      return out_({ ok: true, n: t2.length, r: t2, p: palabras_(t2) });   // r = las respuestas tal cual las escribieron (sin nombres, correos ni celulares)
     } catch (err) { return out_({ ok: false, error: String(err) }); }
   }
   return out_({ ok: true, service: "feminario-tu-app-de-finanzas" });

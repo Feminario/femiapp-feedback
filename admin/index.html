@@ -39,6 +39,10 @@
   body.captura .wrap{ max-width:1500px; padding:14px; }
   body.captura .lienzo{ border:0; box-shadow:none; min-height:calc(100vh - 28px); display:flex; flex-direction:column; justify-content:center; }
   .aviso-captura{ position:fixed; left:50%; bottom:12px; transform:translateX(-50%); background:rgba(76,79,104,.85); color:#fff; font-size:12px; padding:6px 14px; border-radius:999px; opacity:0; pointer-events:none; transition:opacity .3s; }
+  .frases{ display:flex; flex-wrap:wrap; justify-content:center; align-items:center; align-content:center; gap:14px 30px; padding:18px 10px 10px; min-height:380px; }
+  .frases span{ font-family:'Montserrat',sans-serif; font-weight:700; line-height:1.12; text-align:center; max-width:46%; }
+  body.captura .frases{ min-height:calc(100vh - 230px); gap:18px 40px; }
+  .aviso-script{ margin-top:10px; font-size:12.5px; color:var(--alerta); font-weight:600; text-align:center; }
   [hidden]{ display:none !important; }
 </style>
 </head>
@@ -49,7 +53,7 @@
   <div class="ejemplo" id="ejemplo" hidden>Datos de EJEMPLO para ver cómo queda. Las respuestas reales aparecen aquí cuando la gente responde.</div>
 
   <div class="controles">
-    <div class="ocultar"><label for="excluir"><b>Ocultar palabras</b> (separadas por coma):</label><input type="text" id="excluir" placeholder="ej. dolor, plata, mucho"></div>
+    <div class="ocultar"><label for="excluir"><b>Ocultar respuestas que contengan</b> (separado por coma):</label><input type="text" id="excluir" placeholder="ej. prueba, 12345"></div>
     <div class="acc">
       <button class="btn secundario chico" id="actualizar" type="button">Actualizar</button>
       <button class="btn chico" id="captura" type="button">Modo captura</button>
@@ -61,7 +65,7 @@
       <div><h1>¿Qué dolor te gustaría escalar?</h1><div class="cuenta" id="cuenta"></div></div>
       <img class="logo" src="../assets/logo-feminario.png" alt="Feminario">
     </header>
-    <div class="nube" id="nube"><canvas id="cv"></canvas><div class="vacio" id="vacio" hidden></div></div>
+    <div class="nube" id="nube"><div class="frases" id="frases"></div><canvas id="cv" hidden></canvas><div class="vacio" id="vacio" hidden></div><div class="aviso-script" id="aviso-script" hidden>Para ver las respuestas completas falta actualizar el script (nueva versión). Mientras tanto se muestran palabras sueltas.</div></div>
     <div class="pie-lienzo">@feminario.co</div>
   </div>
   <div class="top" id="top"></div>
@@ -70,7 +74,7 @@
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"></script>
-<script src="../assets/config.js?v=4"></script>
+<script src="../assets/config.js?v=5"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
@@ -89,19 +93,56 @@
     return { n: t.length, p: Object.keys(cuenta).map(function (k) { return [forma[k], cuenta[k]]; }).sort(function (a, b) { return b[1] - a[1]; }) };
   }
 
+  var normal = function (t) { return sinTilde(String(t).toLowerCase()).replace(/[^a-z0-9ñ ]+/g, " ").replace(/\s+/g, " ").trim(); };
   function pintar() {
     if (!datos) return;
-    var fuera = new Set(($("excluir").value || "").split(",").map(function (x) { return sinTilde(x.trim().toLowerCase()); }).filter(Boolean));
-    var lista = datos.p.filter(function (x) { return !fuera.has(sinTilde(String(x[0]))); }).slice(0, 90), n = datos.n;
-    $("cuenta").textContent = n + (n === 1 ? " respuesta" : " respuestas") + (lista.length ? " · " + lista.length + " palabras" : "");
+    var fuera = ($("excluir").value || "").split(",").map(function (x) { return normal(x); }).filter(Boolean);
+    if (datos.r) return pintarFrases(fuera);
+    // Script viejo (solo conteos): palabras sueltas mientras se actualiza
+    $("aviso-script").hidden = false; $("frases").hidden = true; $("cv").hidden = false;
+    var lista = datos.p.filter(function (x) { return !fuera.some(function (f) { return normal(x[0]) === f; }); }).slice(0, 90), n = datos.n;
+    $("cuenta").textContent = n + (n === 1 ? " respuesta" : " respuestas");
     var cv = $("cv"), W = Math.max(320, $("nube").clientWidth), H = Math.round(W * 0.56);
     var dpr = Math.min(window.devicePixelRatio || 1, 2.5);
     cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + "px";
-    cv.getContext("2d").clearRect(0, 0, cv.width, cv.height);
-    $("vacio").hidden = lista.length > 0; $("vacio").textContent = n ? "No quedan palabras para mostrar (revisa «Ocultar palabras»)." : "Todavía no hay respuestas.";
-    $("top").innerHTML = lista.slice(0, 12).map(function (x) { return "<span><b>" + x[1] + "</b> · " + String(x[0]).replace(/[<>&]/g, "") + "</span>"; }).join("");
+    $("vacio").hidden = lista.length > 0; $("vacio").textContent = "Todavía no hay respuestas.";
     if (!lista.length) return;
     dibujar(lista, W, dpr, 0, 1);
+  }
+
+  // NUBE DE RESPUESTAS: cada respuesta completa, tal cual la escribieron. Si varias escribieron lo mismo, va más grande.
+  function pintarFrases(fuera) {
+    $("aviso-script").hidden = true; $("cv").hidden = true; $("frases").hidden = false; $("top").innerHTML = "";
+    var grupos = {}, orden = [];
+    datos.r.forEach(function (t) {
+      var txt = String(t).replace(/\s+/g, " ").trim(); if (!txt) return;
+      var k = normal(txt); if (!k || fuera.some(function (f) { return k.indexOf(f) >= 0; })) return;
+      if (!grupos[k]) { grupos[k] = { txt: txt, n: 0 }; orden.push(k); }
+      grupos[k].n++;
+    });
+    var lista = orden.map(function (k) { return grupos[k]; });
+    var total = lista.reduce(function (a, x) { return a + x.n; }, 0);
+    $("cuenta").textContent = total + (total === 1 ? " respuesta" : " respuestas");
+    $("vacio").hidden = lista.length > 0; $("vacio").textContent = "Todavía no hay respuestas.";
+    var cont = $("frases"); cont.innerHTML = "";
+    if (!lista.length) return;
+    var max = Math.max.apply(null, lista.map(function (x) { return x.n; }));
+    var W = $("nube").clientWidth, base = Math.max(15, Math.min(34, W / 40));
+    // tamaño: más veces = más grande; las cortas un poco más grandes para que se lean como titular
+    lista.forEach(function (x) {
+      var largo = x.txt.length, fLargo = largo <= 14 ? 1.45 : largo <= 28 ? 1.2 : largo <= 55 ? 1 : 0.82;
+      x.tam = base * fLargo * (1 + 0.7 * (max > 1 ? (x.n - 1) / (max - 1) : 0));
+    });
+    // las más grandes al centro y las chicas a los lados
+    var porTam = lista.slice().sort(function (a, b) { return b.tam - a.tam; }), dist = [];
+    porTam.forEach(function (x, i) { if (i % 2) dist.push(x); else dist.unshift(x); });
+    dist.forEach(function (x, i) {
+      var el = document.createElement("span");
+      el.textContent = x.txt;
+      el.style.fontSize = Math.round(x.tam) + "px";
+      el.style.color = x.n > 1 ? PALETA[0] : PALETA[i % 3];
+      cont.appendChild(el);
+    });
   }
 
   // Dibuja TODAS las palabras: si alguna no cabe (wordcloud2 la descarta), se repite con letras un poco más chicas hasta que quepan todas
@@ -136,7 +177,7 @@
     if (!API) { $("error").textContent = "El formulario aún no está conectado."; return; }
     fetch(API + "?accion=palabras").then(function (r) { return r.json(); }).then(function (j) {
       if (!j.ok) { $("error").textContent = "No pude leer las respuestas: " + (j.error || "error"); return; }
-      var nuevo = { n: j.n, p: j.p }; if (JSON.stringify(nuevo) !== JSON.stringify(datos)) { datos = nuevo; pintarListo(); }
+      var nuevo = { n: j.n, p: j.p || [], r: j.r || null }; if (JSON.stringify(nuevo) !== JSON.stringify(datos)) { datos = nuevo; pintarListo(); }
     }).catch(function () { $("error").textContent = "No pude conectarme. Revisa tu conexión y toca Actualizar."; });
   }
 

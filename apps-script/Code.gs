@@ -18,7 +18,7 @@ var P2 = "¿Qué dolor te gustaría escalar?";
 var ORIGEN = "Evento ignia";
 
 // Los encabezados pueden traer espacios invisibles o mayúsculas distintas: se comparan normalizados
-function norm_(t) { return String(t == null ? "" : t).replace(/[ ​‌‍﻿]/g, " ").replace(/\s+/g, " ").trim().toLowerCase(); }
+function norm_(t) { return String(t == null ? "" : t).replace(/[\u00a0\u200b\u200c\u200d\ufeff]/g, " ").replace(/\s+/g, " ").trim().toLowerCase(); }
 function seguro_(v, max) { v = String(v == null ? "" : v).replace(/\s+/g, " ").trim().slice(0, max || 300); return /^[=+\-@]/.test(v) ? "'" + v : v; }   // evita fórmulas
 function celular_(v) {
   var d = String(v || "").replace(/\D/g, "");

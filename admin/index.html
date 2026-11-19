@@ -14,15 +14,11 @@
   .barra{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
   .barra img{ height:30px; }
   .pill{ display:inline-block; background:rgba(255,255,255,.7); border:1px solid var(--vidrio-borde); border-radius:999px; padding:6px 14px; font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--morado); }
-  .acceso{ max-width:420px; margin:60px auto; text-align:center; }
-  .acceso h2{ margin-bottom:6px; }
   .controles{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
-  .tab{ border:1.5px solid rgba(126,132,174,.35); background:rgba(255,255,255,.75); color:var(--morado-oscuro); border-radius:999px; padding:9px 16px; font-size:13.5px; font-weight:700; font-family:inherit; cursor:pointer; }
-  .tab.on{ background:var(--morado); border-color:var(--morado); color:#fff; }
   .acc{ margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; }
   .btn.chico{ margin-top:0; }
-  .ocultar{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:12px; font-size:13px; }
-  .ocultar input{ flex:1; min-width:220px; width:auto; padding:10px 14px; border-radius:999px; }
+  .ocultar{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:13px; flex:1; min-width:260px; }
+  .ocultar input{ flex:1; min-width:200px; width:auto; padding:10px 14px; border-radius:999px; }
   .lienzo{ background:#fff; border:1px solid #E4E5EE; border-radius:28px; padding:28px 28px 18px; box-shadow:0 8px 30px rgba(76,79,104,.07); }
   .lienzo header{ display:flex; justify-content:space-between; align-items:flex-start; gap:14px; flex-wrap:wrap; }
   .lienzo h1{ font-size:clamp(22px,3.4vw,36px); color:var(--morado-oscuro); margin:0; line-height:1.15; font-weight:800; max-width:760px; }
@@ -37,46 +33,39 @@
   .top b{ color:var(--morado); }
   .error{ color:var(--alerta); font-size:13px; font-weight:600; min-height:18px; margin-top:10px; }
   .ejemplo{ background:var(--durazno); color:var(--morado-oscuro); border-radius:14px; padding:8px 14px; font-size:13px; font-weight:700; margin-bottom:12px; }
-  body.captura .barra, body.captura .controles, body.captura .ocultar, body.captura .top, body.captura .ejemplo{ display:none !important; }
+  body.captura .barra, body.captura .controles, body.captura .top, body.captura .ejemplo{ display:none !important; }
   body.captura{ background:#fff; }
   body.captura .blob{ display:none; }
   body.captura .wrap{ max-width:1500px; padding:14px; }
-  body.captura .lienzo{ border:0; box-shadow:none; }
-  body.captura .lienzo{ min-height:calc(100vh - 28px); display:flex; flex-direction:column; justify-content:center; }
-  .aviso-captura{ position:fixed; left:50%; bottom:12px; transform:translateX(-50%); background:rgba(76,79,104,.85); color:#fff; font-size:12px; padding:6px 14px; border-radius:999px; opacity:.0; pointer-events:none; }
+  body.captura .lienzo{ border:0; box-shadow:none; min-height:calc(100vh - 28px); display:flex; flex-direction:column; justify-content:center; }
+  .aviso-captura{ position:fixed; left:50%; bottom:12px; transform:translateX(-50%); background:rgba(76,79,104,.85); color:#fff; font-size:12px; padding:6px 14px; border-radius:999px; opacity:0; pointer-events:none; transition:opacity .3s; }
   [hidden]{ display:none !important; }
 </style>
 </head>
 <body>
 <div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div><div class="blob blob-4"></div>
 <main class="wrap">
+  <div class="barra"><span class="pill">Panel · Tu app de Finanzas</span><img src="../assets/logo-feminario.png" alt="Feminario"></div>
+  <div class="ejemplo" id="ejemplo" hidden>Datos de EJEMPLO para ver cómo queda. Las respuestas reales aparecen aquí cuando la gente responde.</div>
 
-  <section id="panel">
-    <div class="barra"><span class="pill">Panel · Tu app de Finanzas</span><img src="../assets/logo-feminario.png" alt="Feminario"></div>
-    <div class="ejemplo" id="ejemplo" hidden>Datos de EJEMPLO para ver cómo queda. Las respuestas reales aparecen aquí cuando la gente responde.</div>
-
-    <div class="controles">
-      <button class="tab on" data-v="p1" type="button">Lo que esperarían de una app</button>
-      <button class="tab" data-v="p2" type="button">Dolor que quieren escalar</button>
-      <button class="tab" data-v="todas" type="button">Todas las palabras</button>
-      <div class="acc">
-        <button class="btn secundario chico" id="actualizar" type="button">Actualizar</button>
-        <button class="btn chico" id="captura" type="button">Modo captura</button>
-      </div>
+  <div class="controles">
+    <div class="ocultar"><label for="excluir"><b>Ocultar palabras</b> (separadas por coma):</label><input type="text" id="excluir" placeholder="ej. dolor, plata, mucho"></div>
+    <div class="acc">
+      <button class="btn secundario chico" id="actualizar" type="button">Actualizar</button>
+      <button class="btn chico" id="captura" type="button">Modo captura</button>
     </div>
-    <div class="ocultar"><label for="excluir"><b>Ocultar palabras</b> (separadas por coma):</label><input type="text" id="excluir" placeholder="ej. app, finanzas, quiero"></div>
+  </div>
 
-    <div class="lienzo" id="lienzo">
-      <header>
-        <div><h1 id="titulo"></h1><div class="cuenta" id="cuenta"></div></div>
-        <img class="logo" src="../assets/logo-feminario.png" alt="Feminario">
-      </header>
-      <div class="nube" id="nube"><canvas id="cv"></canvas><div class="vacio" id="vacio" hidden></div></div>
-      <div class="pie-lienzo">@feminario.co</div>
-    </div>
-    <div class="top" id="top"></div>
-    <div class="error" id="error" role="alert"></div>
-  </section>
+  <div class="lienzo" id="lienzo">
+    <header>
+      <div><h1>¿Qué dolor te gustaría escalar?</h1><div class="cuenta" id="cuenta"></div></div>
+      <img class="logo" src="../assets/logo-feminario.png" alt="Feminario">
+    </header>
+    <div class="nube" id="nube"><canvas id="cv"></canvas><div class="vacio" id="vacio" hidden></div></div>
+    <div class="pie-lienzo">@feminario.co</div>
+  </div>
+  <div class="top" id="top"></div>
+  <div class="error" id="error" role="alert"></div>
   <div class="aviso-captura" id="aviso-captura">Presiona Esc para salir del modo captura</div>
 </main>
 
@@ -87,38 +76,23 @@
   var $ = function (id) { return document.getElementById(id); };
   var API = (window.FB_CFG || {}).API_URL;
   var DEMO = /[?&]demo=1/.test(location.search);
-  var TITULOS = { p1: "¿Qué esperarían que una app de finanzas hiciera por ellas?", p2: "¿Qué dolor les gustaría escalar?", todas: "Lo que dicen las mujeres sobre su plata" };
-  var datos = null, vista = "p1";
+  var datos = null;   // { n: respuestas, p: [[palabra, veces], …] } con los dolores de la última pregunta
   var PALETA = ["#4C4F68", "#7E84AE", "#8A90B8", "#A7ABC8"];   // neutros de la identidad: de más oscuro (palabras más frecuentes) a más suave
-  var STOP = new Set(("a al algo algun alguna algunas alguno algunos ante antes aqui asi aun aunque bien cada casi como con contra cosas cual cuando de del desde donde dos e el ella ellas ello ellos en entre era eran es esa esas ese eso esos esta estan estar este esto estos fue fueron ha hace hacen hacer hacia han hasta hay hoy la las le les lo los mas me mi mis misma mismo mucho muchos muy nada ni no nos nuestra nuestro o otra otras otro otros para pero poco por porque pues que quien se sea ser si sido sin sobre solo su sus tambien tan tanto te tener tengo tiene tienen todo todas todos tu tus un una uno unos usted y ya yo quiero quisiera queria gustaria esperaria esperarias seria podria pudiera puedo pueda puedan poder deberia debe hiciera hacerlo hacerme haga hagan ayude ayudara ayudaria ayudar app apps aplicacion aplicaciones finanzas finanza persona personas cosa vez veces manera forma tipo parte ahora siempre nunca ademas aca ahi entonces mejor vida dia dias").split(" "));
-  var sinTilde = function (t) { return t.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); };
+  var sinTilde = function (t) { return t.normalize("NFD").replace(/[̀-ͯ]/g, ""); };
 
   // Solo para la vista de ejemplo: la misma cuenta que hace el script con las respuestas reales
-  function contar(textos) {
-    var cuenta = {}, forma = {};
-    textos.forEach(function (t) { (String(t).toLowerCase().match(/[\p{L}]+/gu) || []).forEach(function (w) { var k = sinTilde(w); if (k.length < 3 || STOP.has(k)) return; cuenta[k] = (cuenta[k] || 0) + 1; forma[k] = forma[k] || {}; forma[k][w] = (forma[k][w] || 0) + 1; }); });
-    return Object.keys(cuenta).map(function (k) { var f = Object.keys(forma[k]).sort(function (a, b) { return forma[k][b] - forma[k][a]; })[0]; return [f, cuenta[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
-  }
+  var STOP = new Set("a al algo ante como con cual de del e el ella en es esa ese esta este fue ha hay la las le lo los mas me mi mis muy ni no nos o para pero por que se si sin sobre su sus te tengo tiene tu un una y ya yo".split(" "));
   function ejemplo() {
-    var p1 = ["Que me ayude a ahorrar sin sentir culpa", "Quiero entender mis gastos y ahorrar cada mes", "Que me enseñe a invertir paso a paso, sin tecnicismos", "Organizar mi plata y mis deudas en un solo lugar", "Que me recuerde ahorrar y me muestre mi progreso", "Entender dónde se me va el dinero", "Aprender a invertir con poco dinero", "Que me ayude a salir de deudas y tener tranquilidad", "Un presupuesto fácil que sí pueda cumplir", "Que me motive a ahorrar y a invertir", "Claridad sobre mis gastos y mis metas", "Que me acompañe a construir mi fondo de emergencia"];
-    var p2 = ["Las deudas de la tarjeta", "No sé invertir y me da miedo", "No logro ahorrar a fin de mes", "Depender de otra persona para mi plata", "Ahorrar para mi fondo de emergencia", "El miedo a invertir", "Salir de deudas", "No tener un presupuesto claro", "Ahorrar para mi casa", "Aprender a invertir"];
-    return { ok: true, n1: p1.length, n2: p2.length, p1: contar(p1), p2: contar(p2) };
-  }
-
-  function listaDeVista() {
-    var base = vista === "p1" ? datos.p1 : vista === "p2" ? datos.p2 : null;
-    if (!base) {                                                       // todas: se suman las dos listas
-      var m = {}; datos.p1.concat(datos.p2).forEach(function (x) { var k = sinTilde(x[0]); (m[k] = m[k] || [x[0], 0])[1] += x[1]; });
-      base = Object.keys(m).map(function (k) { return m[k]; }).sort(function (a, b) { return b[1] - a[1]; });
-    }
-    var fuera = new Set(($("excluir").value || "").split(",").map(function (x) { return sinTilde(x.trim().toLowerCase()); }).filter(Boolean));
-    return base.filter(function (x) { return !fuera.has(sinTilde(x[0])); }).slice(0, 90);
+    var t = ["Las deudas de la tarjeta", "No sé invertir y me da miedo", "No logro ahorrar a fin de mes", "Depender de otra persona para mi plata", "Ahorrar para mi fondo de emergencia", "El miedo a invertir", "Salir de deudas", "No tener un presupuesto claro", "Ahorrar para mi casa", "Aprender a invertir", "Las deudas me quitan la tranquilidad", "Ahorrar sin sentir culpa"];
+    var cuenta = {}, forma = {};
+    t.forEach(function (x) { (x.toLowerCase().match(/[\p{L}]+/gu) || []).forEach(function (w) { var k = sinTilde(w); if (k.length < 3 || STOP.has(k)) return; cuenta[k] = (cuenta[k] || 0) + 1; forma[k] = w; }); });
+    return { n: t.length, p: Object.keys(cuenta).map(function (k) { return [forma[k], cuenta[k]]; }).sort(function (a, b) { return b[1] - a[1]; }) };
   }
 
   function pintar() {
     if (!datos) return;
-    var lista = listaDeVista(), n = vista === "p1" ? datos.n1 : vista === "p2" ? datos.n2 : Math.max(datos.n1, datos.n2);
-    $("titulo").textContent = TITULOS[vista];
+    var fuera = new Set(($("excluir").value || "").split(",").map(function (x) { return sinTilde(x.trim().toLowerCase()); }).filter(Boolean));
+    var lista = datos.p.filter(function (x) { return !fuera.has(sinTilde(String(x[0]))); }).slice(0, 90), n = datos.n;
     $("cuenta").textContent = n + (n === 1 ? " respuesta" : " respuestas") + (lista.length ? " · " + lista.length + " palabras" : "");
     var cv = $("cv"), W = Math.max(320, $("nube").clientWidth), H = Math.round(W * 0.5);
     var dpr = Math.min(window.devicePixelRatio || 1, 2.5);
@@ -129,7 +103,7 @@
     if (!lista.length) return;
     var max = lista[0][1], min = lista[lista.length - 1][1], base = W / 14;
     WordCloud(cv, {
-      list: lista, gridSize: Math.round(W / 70 * dpr), backgroundColor: "rgba(0,0,0,0)",
+      list: lista, gridSize: Math.round(W / 50 * dpr), backgroundColor: "rgba(0,0,0,0)",
       fontFamily: "Montserrat, sans-serif", fontWeight: "700",
       weightFactor: function (v) { var t = max === min ? 1 : (v - min) / (max - min); return (base * 0.55 + base * 1.55 * Math.pow(t, 0.8)) * dpr; },
       color: function (w, v) { var t = max === min ? 1 : (v - min) / (max - min); return t > 0.66 ? PALETA[0] : t > 0.33 ? PALETA[1] : t > 0.12 ? PALETA[2] : PALETA[3]; },
@@ -144,11 +118,10 @@
     if (!API) { $("error").textContent = "El formulario aún no está conectado."; return; }
     fetch(API + "?accion=palabras").then(function (r) { return r.json(); }).then(function (j) {
       if (!j.ok) { $("error").textContent = "No pude leer las respuestas: " + (j.error || "error"); return; }
-      datos = j; pintar();
+      datos = { n: j.n, p: j.p }; pintar();
     }).catch(function () { $("error").textContent = "No pude conectarme. Revisa tu conexión y toca Actualizar."; });
   }
 
-  document.querySelectorAll(".tab").forEach(function (b) { b.onclick = function () { vista = b.getAttribute("data-v"); document.querySelectorAll(".tab").forEach(function (x) { x.classList.toggle("on", x === b); }); pintar(); }; });
   $("actualizar").onclick = cargar;
   $("excluir").addEventListener("input", function () { try { localStorage.setItem("fb_excluir", $("excluir").value); } catch (e) {} pintar(); });
   try { $("excluir").value = localStorage.getItem("fb_excluir") || ""; } catch (e) {}

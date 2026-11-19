@@ -5,7 +5,7 @@
  *  · PASO 2 (etapa 2): completa ESA misma fila (la más reciente con ese correo y ese origen) con «¿Qué dolor te gustaría escalar?».
  * Las columnas se buscan por su encabezado; las dos de preguntas se crean al final la primera vez. No se toca ninguna otra columna.
  *
- * PANEL /admin (nube de palabras, sin clave): GET ?accion=palabras devuelve SOLO el conteo de palabras de las dos preguntas
+ * PANEL /admin (nube de palabras, sin clave): GET ?accion=palabras devuelve SOLO el conteo de palabras de «¿Qué dolor te gustaría escalar?»
  * (nunca las frases, ni nombres, correos o celulares), de las filas con Origen «Evento ignia».
  *
  * Instalación / actualización: pega este archivo en el proyecto → Implementar → Administrar implementaciones → editar → Nueva versión → Implementar.
@@ -113,15 +113,15 @@ function doGet(e) {
   if (p.accion === "palabras") {                                      // panel /admin: abierto, pero SOLO devuelve conteos de palabras (sin frases, nombres, correos ni celulares)
     try {
       var h = preparar_(), hoja = h.hoja, n = hoja.getLastRow(), cOrigen = h.col("Origen");
-      var t1 = [], t2 = [];
+      var t2 = [];                                                                 // solo los dolores de la última pregunta
       if (n > 1) {
         hoja.getRange(2, 1, n - 1, h.titulos.length).getValues().forEach(function (r) {
           if (cOrigen >= 0 && norm_(r[cOrigen]) !== norm_(ORIGEN)) return;     // solo lo del formulario del evento
-          var a = String(r[h.cP1] || "").trim(), b = String(r[h.cP2] || "").trim();
-          if (a) t1.push(a); if (b) t2.push(b);
+          var b = String(r[h.cP2] || "").trim();
+          if (b) t2.push(b);
         });
       }
-      return out_({ ok: true, n1: t1.length, n2: t2.length, p1: palabras_(t1), p2: palabras_(t2) });
+      return out_({ ok: true, n: t2.length, p: palabras_(t2) });
     } catch (err) { return out_({ ok: false, error: String(err) }); }
   }
   return out_({ ok: true, service: "feminario-tu-app-de-finanzas" });

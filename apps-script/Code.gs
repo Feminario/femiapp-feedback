@@ -2,7 +2,7 @@
  * Feminario — Tu app de Finanzas (formulario del evento)
  * Cada respuesta se agrega como una fila NUEVA a la hoja «LEADS CLUB 365 - 3RA COHORTE» (pestaña «Hoja 1»), con Origen = «Evento ignia».
  * Las columnas se buscan por su encabezado (Nombre, Whatsapp, Email, Fecha, Origen); la respuesta va en la columna
- * «¿Qué esperas que una app de finanzas hiciera por ti?», que se crea al final la primera vez. No se toca ninguna otra columna.
+ * «¿Qué esperarías que una app de finanzas hiciera por ti?», que se crea al final la primera vez. No se toca ninguna otra columna.
  *
  * Instalación (una sola vez, 2 minutos):
  *  1. Entra a script.new con la cuenta de Feminario que puede editar la hoja y pega este archivo.
@@ -35,6 +35,11 @@ function doPost(e) {
     var titulos = hoja.getRange(1, 1, 1, ultCol).getValues()[0].map(norm_);
     function col(nombre) { return titulos.indexOf(norm_(nombre)); }
     var cPregunta = col(PREGUNTA);
+    if (cPregunta < 0 && col(PREGUNTA_ANTES) >= 0) {                  // la columna ya existía con el texto anterior: solo se renombra
+      cPregunta = col(PREGUNTA_ANTES);
+      hoja.getRange(1, cPregunta + 1).setValue(PREGUNTA);
+      titulos[cPregunta] = norm_(PREGUNTA);
+    }
     if (cPregunta < 0) {                                              // columna nueva al final, con el mismo estilo del encabezado
       cPregunta = titulos.length;
       hoja.getRange(1, cPregunta + 1).setValue(PREGUNTA);
